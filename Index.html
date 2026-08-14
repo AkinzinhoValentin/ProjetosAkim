@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle e Envio de Ponto</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    /* ==================== TEMA CLARO ==================== */
+    body.light-theme {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    body.light-theme .glass-card {
+      background: rgba(255, 255, 255, 0.85) !important;
+      border-color: rgba(15, 23, 42, 0.08) !important;
+    }
+    body.light-theme ::-webkit-scrollbar-track { background: #f1f5f9 !important; }
+    body.light-theme ::-webkit-scrollbar-thumb { background: #cbd5e1 !important; }
+
+    body.light-theme .bg-slate-950\/80 { background-color: rgba(255, 255, 255, 0.85) !important; }
+    body.light-theme .bg-slate-900\/80 { background-color: rgba(241, 245, 249, 0.9) !important; }
+    body.light-theme .bg-slate-900\/50 { background-color: rgba(241, 245, 249, 0.75) !important; }
+    body.light-theme .bg-slate-900 { background-color: #f8fafc !important; }
+    body.light-theme .bg-slate-800\/80 { background-color: rgba(255, 255, 255, 0.9) !important; }
+    body.light-theme .bg-slate-800\/50 { background-color: rgba(226, 232, 240, 0.6) !important; }
+    body.light-theme .bg-slate-800\/40 { background-color: rgba(226, 232, 240, 0.5) !important; }
+    body.light-theme .bg-slate-800\/30 { background-color: rgba(226, 232, 240, 0.4) !important; }
+    body.light-theme .bg-slate-800 { background-color: #e2e8f0 !important; }
+    body.light-theme .bg-slate-700 { background-color: #cbd5e1 !important; }
+    body.light-theme .hover\:bg-slate-700:hover { background-color: #94a3b8 !important; }
+    body.light-theme .hover\:bg-slate-600:hover { background-color: #94a3b8 !important; }
+    body.light-theme .hover\:bg-slate-800:hover { background-color: #e2e8f0 !important; }
+    body.light-theme .hover\:bg-slate-800\/50:hover { background-color: rgba(226, 232, 240, 0.6) !important; }
+    body.light-theme .hover\:bg-slate-800\/40:hover { background-color: rgba(226, 232, 240, 0.5) !important; }
+
+    body.light-theme .border-slate-700,
+    body.light-theme .border-slate-700\/50,
+    body.light-theme .border-slate-700\/80 { border-color: #cbd5e1 !important; }
+    body.light-theme .border-slate-800,
+    body.light-theme .border-slate-800\/50 { border-color: #e2e8f0 !important; }
+    body.light-theme .hover\:border-blue-500\/50:hover { border-color: rgba(59, 130, 246, 0.5) !important; }
+    body.light-theme .divide-slate-800\/60 > * + * { border-color: #e2e8f0 !important; }
+
+    body.light-theme .text-white { color: #0f172a !important; }
+    body.light-theme .text-slate-200 { color: #1e293b !important; }
+    body.light-theme .text-slate-300 { color: #334155 !important; }
+    body.light-theme .text-slate-400 { color: #64748b !important; }
+    body.light-theme .text-slate-500 { color: #94a3b8 !important; }
+    body.light-theme .hover\:text-white:hover { color: #0f172a !important; }
+
+    body.light-theme .bg-blue-950\/40 { background-color: rgba(219, 234, 254, 0.7) !important; }
+    body.light-theme .border-blue-800\/40 { border-color: rgba(96, 165, 250, 0.4) !important; }
+    body.light-theme .text-blue-300 { color: #1d4ed8 !important; }
+
+    /* Botão de tema: alterna o ícone via CSS */
+    .icone-tema-escuro { display: inline-block; }
+    .icone-tema-claro { display: none; }
+    body.light-theme .icone-tema-escuro { display: none; }
+    body.light-theme .icone-tema-claro { display: inline-block; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col gap-6">
+
+  <!-- CABEÇALHO -->
+  <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-800/80 p-6 rounded-2xl border border-slate-700/50 shadow-xl">
+    <div>
+      <h1 class="text-2xl font-bold flex items-center gap-3 text-white">
+        <i class="ph ph-file-text text-blue-400 text-3xl"></i>
+        Controle e Envio de Espelho de Ponto
+      </h1>
+      <p class="text-slate-400 text-sm mt-1">Gerencie funcionários, processe e acompanhe assinaturas via Autentique</p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button onclick="atualizarAbaAtual()" id="btnAtualizarGeral" title="Atualizar dados" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all active:scale-95">
+        <i class="ph ph-arrows-clockwise text-xl"></i>
+        <span class="hidden md:inline">Atualizar</span>
+      </button>
+
+      <button onclick="alternarTema()" title="Alternar tema claro/escuro" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium p-2.5 rounded-xl flex items-center justify-center transition-all active:scale-95">
+        <i class="ph ph-moon-stars text-xl icone-tema-escuro"></i>
+        <i class="ph ph-sun text-xl icone-tema-claro"></i>
+      </button>
+
+      <button onclick="abrirModalUpload()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+        <i class="ph ph-upload-simple text-xl"></i>
+        Novo Upload de PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- NAVEGAÇÃO ENTRE ABAS DA INTERFACE -->
+  <div class="flex gap-2 border-b border-slate-800 pb-1">
+    <button id="tabBtnLogs" onclick="mudarAbaInterface('logs')" class="px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all bg-blue-600 text-white shadow-lg shadow-blue-600/20">
+      <i class="ph ph-clock-counter-clockwise text-lg"></i>
+      Histórico de Envios
+    </button>
+    <button id="tabBtnFuncionarios" onclick="mudarAbaInterface('funcionarios')" class="px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50">
+      <i class="ph ph-users text-lg"></i>
+      Cadastrar / Excluir Funcionários
+    </button>
+    <button id="tabBtnDashboard" onclick="mudarAbaInterface('dashboard')" class="px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50">
+      <i class="ph ph-chart-bar text-lg"></i>
+      Dashboard
+    </button>
+  </div>
+
+  <!-- ==================== ABA 1: HISTÓRICO E LOGS ==================== -->
+  <div id="abaLogsView" class="flex flex-col gap-6">
+    <!-- BARRA DE FERRAMENTAS / FILTROS -->
+    <section class="glass-card p-4 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <label for="selectPasta" class="text-sm font-medium text-slate-300 flex items-center gap-2">
+          <i class="ph ph-folder text-slate-400"></i> Pastas:
+        </label>
+        <select id="selectPasta" onchange="carregarHistorico()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-blue-500 transition-colors w-full md:w-48">
+          <option value="">Ativos</option>
+        </select>
+      </div>
+
+      <div id="acoesMassa" class="hidden flex items-center gap-2 w-full md:w-auto justify-end">
+        <span id="txtSelecionados" class="text-xs text-slate-400 mr-2">0 selecionados</span>
+        
+        <button onclick="solicitarArquivamento()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors">
+          <i class="ph ph-archive text-base"></i> Arquivar
+        </button>
+
+        <button id="btnRestaurar" onclick="executarRestaurar()" class="hidden bg-emerald-800/60 hover:bg-emerald-700/60 text-emerald-200 text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors border border-emerald-600/30">
+          <i class="ph ph-arrow-counter-clockwise text-base"></i> Restaurar
+        </button>
+
+        <button onclick="executarExcluir()" class="bg-red-900/40 hover:bg-red-800/50 text-red-300 text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors border border-red-700/30">
+          <i class="ph ph-trash text-base"></i> Excluir
+        </button>
+      </div>
+    </section>
+
+    <!-- TABELA DE HISTÓRICO -->
+    <main class="glass-card rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex-1 flex flex-col">
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-800 sticky top-0 backdrop-blur-md">
+            <tr>
+              <th class="p-4 w-10">
+                <input type="checkbox" id="checkTodos" onchange="alternarTodosCheckboxes(this)" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+              </th>
+              <th class="p-4 font-semibold">Nome</th>
+              <th class="p-4 font-semibold">Status</th>
+              <th class="p-4 font-semibold">Signatários</th>
+              <th class="p-4 font-semibold">Documento</th>
+              <th class="p-4 font-semibold">Criado em</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorpo" class="divide-y divide-slate-800/60 font-normal">
+            <tr>
+              <td colspan="6" class="p-8 text-center text-slate-500">
+                <i class="ph ph-spinner animate-spin text-3xl mb-2 inline-block"></i>
+                <p>Carregando registros...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== ABA 2: GESTÃO DE FUNCIONÁRIOS ==================== -->
+  <div id="abaFuncionariosView" class="hidden flex flex-col gap-6">
+    <!-- FORMULÁRIO DE INCLUSÃO -->
+    <section class="glass-card p-6 rounded-2xl border border-slate-800">
+      <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="ph ph-user-plus text-blue-400"></i> Incluir Novo Funcionário
+      </h2>
+      
+      <form onsubmit="cadastrarNovoFuncionario(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="text-xs font-semibold text-slate-400 uppercase mb-1 block">Nome Completo *</label>
+          <input type="text" id="novoNome" required placeholder="Ex: João da Silva" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-colors">
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-400 uppercase mb-1 block">WhatsApp (DDD + Número) *</label>
+          <input type="text" id="novoWhatsapp" required placeholder="19999999999" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-colors">
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-400 uppercase mb-1 block">E-mail (Opcional)</label>
+          <input type="email" id="novoEmail" placeholder="joao@empresa.com" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-colors">
+        </div>
+
+        <button type="submit" id="btnSalvarFunc" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20">
+          <i class="ph ph-check text-lg"></i> Salvar Funcionário
+        </button>
+      </form>
+    </section>
+
+    <!-- LISTA DE FUNCIONÁRIOS CADASTRADOS -->
+    <main class="glass-card rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex-1 flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+          <i class="ph ph-address-book text-slate-400"></i> Funcionários Cadastrados na Planilha
+        </h3>
+        <input type="text" id="buscaFunc" oninput="filtrarTabelaFuncionarios()" placeholder="Buscar por nome..." class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 outline-none focus:border-blue-500 w-48">
+      </div>
+
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/80 text-xs uppercase text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="p-4 font-semibold">Linha</th>
+              <th class="p-4 font-semibold">Nome Completo</th>
+              <th class="p-4 font-semibold">WhatsApp</th>
+              <th class="p-4 font-semibold">E-mail</th>
+              <th class="p-4 font-semibold">Status</th>
+              <th class="p-4 font-semibold text-right">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaFuncionariosCorpo" class="divide-y divide-slate-800/60 font-normal">
+            <tr>
+              <td colspan="6" class="p-8 text-center text-slate-500">
+                <i class="ph ph-spinner animate-spin text-3xl mb-2 inline-block"></i>
+                <p>Carregando colaboradores...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== ABA 3: DASHBOARD ==================== -->
+  <div id="abaDashboardView" class="hidden flex flex-col gap-6">
+    <!-- BARRA SUPERIOR -->
+    <section class="flex justify-between items-center">
+      <p class="text-slate-400 text-sm">Resumo de documentos enviados, assinados e pendentes por mês.</p>
+    </section>
+
+    <!-- CARDS DE TOTAIS -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="glass-card p-5 rounded-2xl border border-slate-800">
+        <p class="text-xs uppercase text-slate-400 font-semibold flex items-center gap-1.5">
+          <i class="ph ph-paper-plane-tilt text-blue-400"></i> Enviados
+        </p>
+        <p id="totalEnviados" class="text-3xl font-bold text-blue-400 mt-1">-</p>
+      </div>
+      <div class="glass-card p-5 rounded-2xl border border-slate-800">
+        <p class="text-xs uppercase text-slate-400 font-semibold flex items-center gap-1.5">
+          <i class="ph ph-check-circle text-emerald-400"></i> Assinados
+        </p>
+        <p id="totalAssinados" class="text-3xl font-bold text-emerald-400 mt-1">-</p>
+      </div>
+      <div class="glass-card p-5 rounded-2xl border border-slate-800">
+        <p class="text-xs uppercase text-slate-400 font-semibold flex items-center gap-1.5">
+          <i class="ph ph-clock text-amber-400"></i> Pendentes
+        </p>
+        <p id="totalPendentes" class="text-3xl font-bold text-amber-400 mt-1">-</p>
+      </div>
+      <div class="glass-card p-5 rounded-2xl border border-slate-800">
+        <p class="text-xs uppercase text-slate-400 font-semibold flex items-center gap-1.5">
+          <i class="ph ph-warning-circle text-red-400"></i> Erros
+        </p>
+        <p id="totalErros" class="text-3xl font-bold text-red-400 mt-1">-</p>
+      </div>
+    </section>
+
+    <!-- QUEBRA POR MÊS -->
+    <main class="glass-card rounded-2xl border border-slate-800 p-6 flex flex-col gap-5">
+      <h3 class="font-bold text-white text-sm flex items-center gap-2">
+        <i class="ph ph-calendar-blank text-slate-400"></i> Evolução Mensal
+      </h3>
+      <div id="listaMeses" class="flex flex-col gap-4">
+        <p class="text-center text-slate-500 text-sm py-6">
+          <i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>
+          Carregando dados do dashboard...
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL DE UPLOAD DE PDF -->
+  <div id="modalUpload" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="glass-card bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-5">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="ph ph-file-arrow-up text-blue-400"></i> Enviar Espelho de Ponto
+        </h3>
+        <button onclick="fecharModalUpload()" class="text-slate-400 hover:text-white transition-colors">
+          <i class="ph ph-x text-xl"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <label class="text-xs font-semibold text-slate-400 uppercase">Selecione o PDF Consolidado</label>
+        <div class="border-2 border-dashed border-slate-700 hover:border-blue-500/50 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-800/30 relative" id="dropArea">
+          <input type="file" id="inputPdf" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="atualizarNomeArquivo(this)">
+          <i class="ph ph-cloud-arrow-up text-4xl text-blue-400 mb-2 inline-block"></i>
+          <p id="txtNomeArquivo" class="text-sm font-medium text-slate-300">Clique para selecionar ou arraste o PDF aqui</p>
+          <span class="text-xs text-slate-500 mt-1 block">Apenas arquivos .pdf</span>
+        </div>
+      </div>
+
+      <div id="loadingUpload" class="hidden flex items-center justify-center gap-3 p-3 bg-blue-950/40 border border-blue-800/40 rounded-xl text-blue-300 text-sm">
+        <i class="ph ph-spinner animate-spin text-xl"></i>
+        <span>Processando PDF e enviando para Autentique...</span>
+      </div>
+
+      <div class="flex justify-end gap-3 border-t border-slate-800 pt-4">
+        <button onclick="fecharModalUpload()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 transition-colors">Cancelar</button>
+        <button id="btnEnviar" onclick="processarEEnviarPdf()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-5 py-2 rounded-xl text-sm transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20">
+          <i class="ph ph-paper-plane-right"></i> Processar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT DE LÓGICA -->
+  <script>
+    let listaFuncionariosCache = [];
+    let abaAtualGlobal = 'logs';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      aplicarTemaSalvo();
+      carregarPastas();
+      carregarHistorico();
+    });
+
+    // --- TEMA CLARO / ESCURO ---
+    function aplicarTemaSalvo() {
+      const temaSalvo = localStorage.getItem('temaPontoApp');
+      if (temaSalvo === 'light') {
+        document.body.classList.add('light-theme');
+      }
+    }
+
+    function alternarTema() {
+      const ativado = document.body.classList.toggle('light-theme');
+      localStorage.setItem('temaPontoApp', ativado ? 'light' : 'dark');
+    }
+
+    // --- ATUALIZAÇÃO GERAL (botão do cabeçalho) ---
+    function atualizarAbaAtual() {
+      const btn = document.getElementById('btnAtualizarGeral');
+      const icone = btn.querySelector('i');
+      icone.classList.add('animate-spin');
+
+      const finalizar = () => icone.classList.remove('animate-spin');
+
+      if (abaAtualGlobal === 'logs') {
+        carregarPastas();
+        carregarHistorico();
+        setTimeout(finalizar, 600);
+      } else if (abaAtualGlobal === 'funcionarios') {
+        carregarFuncionarios();
+        setTimeout(finalizar, 600);
+      } else if (abaAtualGlobal === 'dashboard') {
+        // Força ignorar o cache de status de assinatura, para refletir assinaturas recentes
+        carregarDashboard(true, finalizar);
+      }
+    }
+
+    // TROCA DE ABAS NA INTERFACE
+    function mudarAbaInterface(aba) {
+      const abaLogs = document.getElementById('abaLogsView');
+      const abaFunc = document.getElementById('abaFuncionariosView');
+      const abaDash = document.getElementById('abaDashboardView');
+      const btnLogs = document.getElementById('tabBtnLogs');
+      const btnFunc = document.getElementById('tabBtnFuncionarios');
+      const btnDash = document.getElementById('tabBtnDashboard');
+
+      const ativo = "px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all bg-blue-600 text-white shadow-lg shadow-blue-600/20";
+      const inativo = "px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50";
+
+      abaLogs.classList.add('hidden');
+      abaFunc.classList.add('hidden');
+      abaDash.classList.add('hidden');
+      btnLogs.className = inativo;
+      btnFunc.className = inativo;
+      btnDash.className = inativo;
+
+      abaAtualGlobal = aba;
+
+      if (aba === 'logs') {
+        abaLogs.classList.remove('hidden');
+        btnLogs.className = ativo;
+      } else if (aba === 'funcionarios') {
+        abaFunc.classList.remove('hidden');
+        btnFunc.className = ativo;
+        carregarFuncionarios();
+      } else if (aba === 'dashboard') {
+        abaDash.classList.remove('hidden');
+        btnDash.className = ativo;
+        carregarDashboard();
+      }
+    }
+
+    // --- GESTÃO DE FUNCIONÁRIOS ---
+    function carregarFuncionarios() {
+      const tabela = document.getElementById('tabelaFuncionariosCorpo');
+      tabela.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin text-3xl mb-2 inline-block"></i><p>Buscando funcionários...</p></td></tr>`;
+
+      google.script.run
+        .withSuccessHandler(dados => {
+          listaFuncionariosCache = dados;
+          renderizarTabelaFuncionarios(dados);
+        })
+        .withFailureHandler(err => {
+          tabela.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-400">Erro: ${err.message}</td></tr>`;
+        })
+        .obterListaFuncionarios();
+    }
+
+    function renderizarTabelaFuncionarios(dados) {
+      const tabela = document.getElementById('tabelaFuncionariosCorpo');
+      if (!dados || dados.length === 0) {
+        tabela.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Nenhum funcionário encontrado na aba "Dados Base".</td></tr>`;
+        return;
+      }
+
+      tabela.innerHTML = dados.map(f => `
+        <tr class="hover:bg-slate-800/40 transition-colors">
+          <td class="p-4 text-xs font-mono text-slate-500">#${f.linha}</td>
+          <td class="p-4 font-semibold text-white">${f.nome}</td>
+          <td class="p-4 text-slate-300 font-mono text-xs">${f.whatsapp}</td>
+          <td class="p-4 text-slate-400 text-xs">${f.email || '-'}</td>
+          <td class="p-4">
+            <span class="px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${f.status}</span>
+          </td>
+          <td class="p-4 text-right">
+            <button onclick="excluirFuncionario(${f.linha}, '${f.nome}')" class="bg-red-900/30 hover:bg-red-800/50 text-red-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-red-700/30 inline-flex items-center gap-1">
+              <i class="ph ph-trash"></i> Excluir
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filtrarTabelaFuncionarios() {
+      const busca = document.getElementById('buscaFunc').value.toLowerCase();
+      const filtrados = listaFuncionariosCache.filter(f => f.nome.toLowerCase().includes(busca));
+      renderizarTabelaFuncionarios(filtrados);
+    }
+
+    function cadastrarNovoFuncionario(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSalvarFunc');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> Salvando...`;
+
+      const payload = {
+        nome: document.getElementById('novoNome').value,
+        whatsapp: document.getElementById('novoWhatsapp').value,
+        email: document.getElementById('novoEmail').value
+      };
+
+      google.script.run
+        .withSuccessHandler(res => {
+          alert(res.mensagem);
+          document.getElementById('novoNome').value = '';
+          document.getElementById('novoWhatsapp').value = '';
+          document.getElementById('novoEmail').value = '';
+          btn.disabled = false;
+          btn.innerHTML = `<i class="ph ph-check text-lg"></i> Salvar Funcionário`;
+          carregarFuncionarios();
+        })
+        .withFailureHandler(err => {
+          alert('Erro ao salvar: ' + err.message);
+          btn.disabled = false;
+          btn.innerHTML = `<i class="ph ph-check text-lg"></i> Salvar Funcionário`;
+        })
+        .adicionarFuncionario(payload);
+    }
+
+    function excluirFuncionario(linha, nome) {
+      if (confirm(`Tem certeza que deseja excluir o colaborador "${nome}" da planilha?`)) {
+        google.script.run
+          .withSuccessHandler(res => {
+            alert(res.mensagem);
+            carregarFuncionarios();
+          })
+          .withFailureHandler(err => alert('Erro: ' + err.message))
+          .removerFuncionario(linha);
+      }
+    }
+
+    // --- FUNÇÕES DA TABELA DE HISTÓRICO ---
+    function carregarPastas() {
+      google.script.run
+        .withSuccessHandler(pastas => {
+          const select = document.getElementById('selectPasta');
+          select.innerHTML = '<option value="">Ativos</option>';
+          pastas.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            opt.textContent = p;
+            select.appendChild(opt);
+          });
+        })
+        .obterPastasArquivadas();
+    }
+
+    function carregarHistorico() {
+      const pasta = document.getElementById('selectPasta').value;
+      const tabela = document.getElementById('tabelaCorpo');
+      const btnRestaurar = document.getElementById('btnRestaurar');
+      
+      btnRestaurar.classList.toggle('hidden', !pasta);
+
+      tabela.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin text-3xl mb-2 inline-block"></i><p>Buscando registros...</p></td></tr>`;
+
+      google.script.run
+        .withSuccessHandler(dados => renderizarTabela(dados))
+        .withFailureHandler(err => {
+          tabela.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-400">Erro: ${err.message}</td></tr>`;
+        })
+        .obterHistoricoLogs(pasta);
+    }
+
+    function renderizarTabela(dados) {
+      const tabela = document.getElementById('tabelaCorpo');
+      document.getElementById('checkTodos').checked = false;
+      atualizarContadorSelecao();
+
+      if (!dados || dados.length === 0) {
+        tabela.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Nenhum registro localizado nesta pasta.</td></tr>`;
+        return;
+      }
+
+      tabela.innerHTML = dados.map(item => {
+        const statusClass = item.status === 'Sucesso' || item.status === 'Assinado' 
+          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+          : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+
+        const signatariosHtml = (item.signatarios && item.signatarios.length > 0)
+          ? item.signatarios.map(s => {
+              const icon = s.assinado ? 'ph-check-circle text-emerald-400' : 'ph-clock text-amber-400';
+              const bg = s.assinado ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-slate-800 text-slate-300 border-slate-700';
+              
+              if (s.linkAssinatura) {
+                return `<a href="${s.linkAssinatura}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${bg} hover:opacity-80 transition-opacity"><i class="ph ${icon}"></i> ${s.nome}</a>`;
+              }
+              return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${bg}"><i class="ph ${icon}"></i> ${s.nome}</span>`;
+            }).join(' ')
+          : '<span class="text-xs text-slate-500">-</span>';
+
+        const urlDoc = item.urlAutentique || item.arquivoAssinadoUrl || item.urlDocumento || item.link;
+        const linkDocHtml = urlDoc 
+          ? `<a href="${urlDoc}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-xs font-medium hover:underline"><i class="ph ph-file-pdf text-base"></i> Ver Documento</a>`
+          : '<span class="text-xs text-slate-500">-</span>';
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="p-4"><input type="checkbox" value="${item.linha}" onchange="atualizarContadorSelecao()" class="checkItem rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0"></td>
+            <td class="p-4 font-semibold text-white">${item.nome}</td>
+            <td class="p-4"><span class="px-2.5 py-1 rounded-md text-xs font-medium border ${statusClass}">${item.status}</span></td>
+            <td class="p-4">${signatariosHtml}</td>
+            <td class="p-4">${linkDocHtml}</td>
+            <td class="p-4 text-xs text-slate-400">${item.data}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- DASHBOARD ---
+    // forcarAtualizacao=true ignora o cache de status de assinatura (usado no botão "Atualizar")
+    function carregarDashboard(forcarAtualizacao, aoFinalizar) {
+      const lista = document.getElementById('listaMeses');
+      lista.innerHTML = `<p class="text-center text-slate-500 text-sm py-6"><i class="ph ph-spinner animate-spin text-2xl mb-2 inline-block"></i><br>${forcarAtualizacao ? 'Verificando assinaturas mais recentes...' : 'Carregando dados do dashboard...'}</p>`;
+
+      google.script.run
+        .withSuccessHandler(dados => {
+          renderizarDashboard(dados);
+          if (aoFinalizar) aoFinalizar();
+        })
+        .withFailureHandler(err => {
+          lista.innerHTML = `<p class="text-center text-red-400 text-sm py-6">Erro: ${err.message}</p>`;
+          if (aoFinalizar) aoFinalizar();
+        })
+        .obterDadosDashboard(!!forcarAtualizacao);
+    }
+
+    function renderizarDashboard(dados) {
+      document.getElementById('totalEnviados').textContent = dados.totais.enviados;
+      document.getElementById('totalAssinados').textContent = dados.totais.assinados;
+      document.getElementById('totalPendentes').textContent = dados.totais.pendentes;
+      document.getElementById('totalErros').textContent = dados.totais.erros;
+
+      const lista = document.getElementById('listaMeses');
+
+      if (!dados.meses || dados.meses.length === 0) {
+        lista.innerHTML = `<p class="text-center text-slate-500 text-sm py-6">Nenhum registro encontrado.</p>`;
+        return;
+      }
+
+      lista.innerHTML = dados.meses.slice().reverse().map(m => {
+        const total = m.enviados || 1; // evita divisão por zero
+        const pctAssinados = Math.round((m.assinados / total) * 100);
+        const pctPendentes = Math.round((m.pendentes / total) * 100);
+
+        const labelCapitalizado = m.label.charAt(0).toUpperCase() + m.label.slice(1);
+
+        return `
+          <div class="flex flex-col gap-2">
+            <div class="flex justify-between items-center text-sm">
+              <span class="font-semibold text-white">${labelCapitalizado}</span>
+              <span class="text-xs text-slate-400">
+                ${m.enviados} enviados · ${m.assinados} assinados · ${m.pendentes} pendentes
+                ${m.erros ? `· <span class="text-red-400">${m.erros} erros</span>` : ''}
+              </span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex">
+              <div class="h-full bg-emerald-500" style="width:${pctAssinados}%"></div>
+              <div class="h-full bg-amber-500" style="width:${pctPendentes}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // UPLOAD DE PDF
+    function processarEEnviarPdf() {
+      const input = document.getElementById('inputPdf');
+      const file = input.files[0];
+
+      if (!file || file.type !== 'application/pdf') {
+        alert('Selecione um arquivo no formato PDF.');
+        return;
+      }
+
+      const btnEnviar = document.getElementById('btnEnviar');
+      const loading = document.getElementById('loadingUpload');
+
+      btnEnviar.disabled = true;
+      btnEnviar.classList.add('opacity-50');
+      loading.classList.remove('hidden');
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64String = e.target.result.split(',')[1];
+        const payload = {
+          nome: file.name,
+          mimeType: file.type,
+          bytes: base64String
+        };
+
+        google.script.run
+          .withSuccessHandler(res => {
+            btnEnviar.disabled = false;
+            btnEnviar.classList.remove('opacity-50');
+            loading.classList.add('hidden');
+            alert(res.mensagem || 'Enviado com sucesso!');
+            fecharModalUpload();
+            carregarHistorico();
+          })
+          .withFailureHandler(err => {
+            btnEnviar.disabled = false;
+            btnEnviar.classList.remove('opacity-50');
+            loading.classList.add('hidden');
+            alert('Falha no upload: ' + err.message);
+          })
+          .salvarPdfNoDriveEProcessar(payload);
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function abrirModalUpload() { document.getElementById('modalUpload').classList.remove('hidden'); }
+    function fecharModalUpload() {
+      document.getElementById('modalUpload').classList.add('hidden');
+      document.getElementById('inputPdf').value = '';
+      document.getElementById('txtNomeArquivo').textContent = 'Clique para selecionar ou arraste o PDF aqui';
+    }
+    function atualizarNomeArquivo(input) {
+      if (input.files && input.files[0]) {
+        document.getElementById('txtNomeArquivo').textContent = input.files[0].name;
+      }
+    }
+    function alternarTodosCheckboxes(master) {
+      document.querySelectorAll('.checkItem').forEach(chk => chk.checked = master.checked);
+      atualizarContadorSelecao();
+    }
+    function atualizarContadorSelecao() {
+      const selecionados = Array.from(document.querySelectorAll('.checkItem:checked')).map(c => c.value);
+      const divAcoes = document.getElementById('acoesMassa');
+      document.getElementById('txtSelecionados').textContent = `${selecionados.length} selecionado(s)`;
+      divAcoes.classList.toggle('hidden', selecionados.length === 0);
+    }
+    function obterLinhasSelecionadas() {
+      return Array.from(document.querySelectorAll('.checkItem:checked')).map(c => c.value);
+    }
+
+    function solicitarArquivamento() {
+      const linhas = obterLinhasSelecionadas();
+      if (linhas.length === 0) return;
+      const pasta = prompt('Informe o nome da pasta de destino para arquivar:');
+      if (!pasta || !pasta.trim()) return;
+
+      google.script.run
+        .withSuccessHandler(res => { alert(res.mensagem); carregarPastas(); carregarHistorico(); })
+        .withFailureHandler(err => alert('Erro: ' + err.message))
+        .arquivarDocumentos(linhas, pasta.trim());
+    }
+
+    function executarRestaurar() {
+      const linhas = obterLinhasSelecionadas();
+      if (linhas.length === 0) return;
+      if (confirm(`Deseja restaurar ${linhas.length} item(ns) para os registros Ativos?`)) {
+        google.script.run
+          .withSuccessHandler(res => { alert(res.mensagem); carregarHistorico(); })
+          .withFailureHandler(err => alert('Erro: ' + err.message))
+          .restaurarDocumentos(linhas);
+      }
+    }
+
+    function executarExcluir() {
+      const linhas = obterLinhasSelecionadas();
+      if (linhas.length === 0) return;
+      if (confirm(`ATENÇÃO: Deseja excluir permanentemente ${linhas.length} registro(s)?`)) {
+        google.script.run
+          .withSuccessHandler(res => { alert(res.mensagem); carregarHistorico(); })
+          .withFailureHandler(err => alert('Erro: ' + err.message))
+          .excluirDocumentos(linhas);
+      }
+    }
+  </script>
+</body>
+</html>
